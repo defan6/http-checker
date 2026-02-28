@@ -1,6 +1,7 @@
 package formatter
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"text/tabwriter"
@@ -8,6 +9,12 @@ import (
 
 	"github.com/defan6/http-checker/internal/checker"
 )
+
+type JSONResult struct {
+	URL        string `json:"url"`
+	StatusCode int    `json:"status_code"`
+	Latency    string `json:"latency_sec"`
+}
 
 func FormatTable(results []checker.Result) {
 	w := tabwriter.NewWriter(os.Stdout, 0, 0, 3, ' ', 0)
@@ -27,6 +34,25 @@ func FormatTable(results []checker.Result) {
 	}
 
 	w.Flush()
+}
+
+func FormatJSON(results []checker.Result) {
+	jsonResults := make([]JSONResult, len(results))
+	for _, res := range results {
+		jsonResult := JSONResult{
+			URL:        res.URL,
+			StatusCode: res.StatusCode,
+			Latency:    formatLatency(res.Latency),
+		}
+		jsonResults = append(jsonResults, jsonResult)
+	}
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", "  ")  // добавляем отступы (pretty format)
+	encoder.SetEscapeHTML(false) // отключаем экранирование HTML
+
+	if err := encoder.Encode(jsonResults); err != nil {
+		fmt.Fprintf(os.Stderr, "Error encoding to JSON: %v\n", err)
+	}
 }
 
 func formatLatency(d time.Duration) string {
