@@ -48,7 +48,7 @@ func FileReader(path string) func() []string {
 }
 
 func CMDLineReader() []string {
-	fmt.Printf("Flag args: %s", flag.Args())
+	fmt.Printf("Flag args: %s\n", flag.Args())
 	return flag.Args()
 }
 
