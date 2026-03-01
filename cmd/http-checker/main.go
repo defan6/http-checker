@@ -46,14 +46,15 @@ type FileOut struct {
 type OutputFormat struct {
 	IsJSONOut  bool
 	IsTableOut bool
-	FileOut    FileOut
+	CSVFileOut FileOut
+	TXTFileOut FileOut
 }
 
 func formatOutput(outFormat OutputFormat) []func([]checker.Result) {
 	sliceFunc := make([]func([]checker.Result), 0, countFormates)
 
-	if outFormat.FileOut.IsFileOut {
-		sliceFunc = append(sliceFunc, formatter.FormatFile(outFormat.FileOut.Path))
+	if outFormat.TXTFileOut.IsFileOut {
+		sliceFunc = append(sliceFunc, formatter.FormatFile(outFormat.TXTFileOut.Path))
 	}
 
 	if outFormat.IsTableOut {
@@ -62,6 +63,10 @@ func formatOutput(outFormat OutputFormat) []func([]checker.Result) {
 
 	if outFormat.IsJSONOut {
 		sliceFunc = append(sliceFunc, formatter.FormatJSON)
+	}
+
+	if outFormat.CSVFileOut.IsFileOut {
+		sliceFunc = append(sliceFunc, formatter.FormatCSVFile(outFormat.CSVFileOut.Path))
 	}
 
 	return sliceFunc
@@ -79,16 +84,21 @@ func parseFlags() Config {
 	flag.IntVar(&cfg.Timeout, "timeout", 5, "request timeout in seconds")
 	flag.BoolVar(&cfg.OutFormat.IsJSONOut, "j", false, "json format output")
 	flag.BoolVar(&cfg.OutFormat.IsJSONOut, "json", false, "json format output")
-	flag.StringVar(&cfg.OutFormat.FileOut.Path, "o", "", "format file output")
-	flag.StringVar(&cfg.OutFormat.FileOut.Path, "out", "", "format file output")
+	flag.StringVar(&cfg.OutFormat.TXTFileOut.Path, "o", "", "format txt file output")
+	flag.StringVar(&cfg.OutFormat.TXTFileOut.Path, "out", "", "format txt file output")
+	flag.StringVar(&cfg.OutFormat.CSVFileOut.Path, "c", "", "format csv file output")
+	flag.StringVar(&cfg.OutFormat.CSVFileOut.Path, "csv", "", "format csv file output")
 	flag.Parse()
 	flag.Visit(func(f *flag.Flag) {
-		if f.Name == "o" {
-			cfg.OutFormat.FileOut.IsFileOut = true
+		if f.Name == "o" || f.Name == "out" {
+			cfg.OutFormat.TXTFileOut.IsFileOut = true
+		}
+		if f.Name == "c" || f.Name == "csv" {
+			cfg.OutFormat.CSVFileOut.IsFileOut = true
 		}
 	})
 	fmt.Printf("Set timeout: %d\n", cfg.Timeout)
-	fmt.Printf("Set file output: %v\n", cfg.OutFormat.FileOut.IsFileOut)
+	fmt.Printf("Set file output: %v\n", cfg.OutFormat.TXTFileOut.IsFileOut)
 	fmt.Printf("Set table output: %v\n", cfg.OutFormat.IsTableOut)
 	fmt.Printf("Set json output: %v\n", cfg.OutFormat.IsJSONOut)
 
