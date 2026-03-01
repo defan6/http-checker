@@ -40,23 +40,39 @@ func (c *Checker) CheckURL(url string) Result {
 	return result
 }
 
-func (c *Checker) CheckURLsConcurrency(urls []string) <-chan Result {
-
+func (c *Checker) CheckURLsConcurrency(maxConnects int, urls []string) <-chan Result {
+	urlsCh := generate(urls)
 	resultChan := make(chan Result, len(urls))
 	wg := sync.WaitGroup{}
 
-	go func() {
-		for _, url := range urls {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+	for range maxConnects {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for url := range urlsCh {
 				result := c.CheckURL(url)
 				resultChan <- result
-			}()
-		}
+			}
+		}()
+	}
+
+	go func() {
 		wg.Wait()
 		close(resultChan)
 	}()
 
 	return resultChan
+}
+
+func generate(urls []string) chan string {
+	in := make(chan string)
+
+	go func() {
+		for _, url := range urls {
+			in <- url
+		}
+		close(in)
+	}()
+
+	return in
 }

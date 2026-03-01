@@ -22,7 +22,7 @@ func Run(cfg *config.Config) error {
 	cl := client.NewClient(clTimeout)
 	ch := checker.NewChecker(cl)
 
-	resChan := ch.CheckURLsConcurrency(urls)
+	resChan := ch.CheckURLsConcurrency(cfg.MaxConnects, urls)
 
 	results := make([]checker.Result, 0, len(urls))
 	for v := range resChan {

@@ -7,7 +7,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -103,9 +102,7 @@ func FormatFile(path string) func([]checker.Result) {
 			outputPath = fmt.Sprintf("reports/txt/%s", fmt.Sprintf("check_%s.txt", timestamp))
 		} else {
 			// Исправляем формирование пути с таймштампом
-			ext := filepath.Ext(outputPath)
-			nameWithoutExt := strings.TrimSuffix(outputPath, ext)
-			outputPath = fmt.Sprintf("reports/txt/%s", fmt.Sprintf("%s_%s%s", nameWithoutExt, timestamp, ext))
+			outputPath = fmt.Sprintf("reports/txt/%s", fmt.Sprintf("%s_%s.txt", outputPath, timestamp))
 		}
 
 		dir := filepath.Dir(outputPath)
@@ -158,9 +155,7 @@ func FormatCSVFile(path string) func([]checker.Result) {
 			outputPath = fmt.Sprintf("reports/csv/%s", fmt.Sprintf("check_%s.csv", timestamp))
 		} else {
 			// Исправляем формирование пути с таймштампом
-			ext := filepath.Ext(outputPath)
-			nameWithoutExt := strings.TrimSuffix(outputPath, ext)
-			outputPath = fmt.Sprintf("reports/csv/%s", fmt.Sprintf("%s_%s%s", nameWithoutExt, timestamp, ext))
+			outputPath = fmt.Sprintf("reports/csv/%s", fmt.Sprintf("%s_%s.csv", outputPath, timestamp))
 		}
 
 		// Создаем директорию

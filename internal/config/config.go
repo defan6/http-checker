@@ -7,6 +7,7 @@ import (
 
 type Config struct {
 	Timeout     int
+	MaxConnects int
 	OutFormat   OutputFormat
 	InputFormat InputFormat
 	URLs        []string
@@ -44,9 +45,12 @@ func ParseFlags() Config {
 	flag.StringVar(&cfg.OutFormat.TXTFileOut.Path, "out", "", "format txt file output")
 	flag.StringVar(&cfg.OutFormat.CSVFileOut.Path, "c", "", "format csv file output")
 	flag.StringVar(&cfg.OutFormat.CSVFileOut.Path, "csv", "", "format csv file output")
+	flag.IntVar(&cfg.MaxConnects, "max_conn", 10, "max connects")
 
 	flag.StringVar(&cfg.InputFormat.FileIn.Path, "i", "", "input file with urls")
 	flag.StringVar(&cfg.InputFormat.FileIn.Path, "in", "", "input file with urls")
+	flag.BoolVar(&cfg.InputFormat.IsCmdLine, "u", false, "cmd line urls")
+	flag.BoolVar(&cfg.InputFormat.IsCmdLine, "url", false, "cmd line urls")
 	flag.Parse()
 	flag.Visit(func(f *flag.Flag) {
 		switch f.Name {
@@ -73,4 +77,5 @@ func Print(cfg Config) {
 	fmt.Printf("Set json output: %v\n", cfg.OutFormat.IsJSONOut)
 	fmt.Printf("Set input file: %v\n", cfg.InputFormat.FileIn.IsFileIn)
 	fmt.Printf("Set cmd line input: %v\n", cfg.InputFormat.IsCmdLine)
+	fmt.Printf("Set max connects: %d\n", cfg.MaxConnects)
 }
