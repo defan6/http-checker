@@ -1,30 +1,36 @@
 package runner
 
 import (
-	"sync"
+	"errors"
 	"time"
 
 	"github.com/defan6/http-checker/internal/checker"
+	"github.com/defan6/http-checker/internal/client"
+	"github.com/defan6/http-checker/internal/config"
+	"github.com/defan6/http-checker/internal/reader"
+	"github.com/defan6/http-checker/internal/writer"
 )
 
-func Run(urls []string, timeout int, resCh chan checker.Result) error {
-	clTimeout := time.Duration(timeout) * time.Second
-	client := checker.NewClient(clTimeout)
-	wg := sync.WaitGroup{}
-
-	for _, url := range urls {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			result := client.CheckURL(url)
-			resCh <- result
-		}()
+func Run(cfg *config.Config) error {
+	readers := config.FormatInput(cfg.InputFormat)
+	urls := reader.ReadURLs(readers)
+	if len(urls) == 0 {
+		return errors.New("Zero urls recieved")
 	}
 
-	go func() {
-		wg.Wait()
-		close(resCh)
-	}()
+	clTimeout := time.Duration(cfg.Timeout) * time.Second
+	cl := client.NewClient(clTimeout)
+	ch := checker.NewChecker(cl)
+
+	resChan := ch.CheckURLsConcurrency(urls)
+
+	results := make([]checker.Result, 0, len(urls))
+	for v := range resChan {
+		results = append(results, v)
+	}
+
+	writers := config.FormatOutput(cfg.OutFormat)
+	writer.WriteURLs(results, writers)
 
 	return nil
 }

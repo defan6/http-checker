@@ -1,4 +1,4 @@
-package formatter
+package writer
 
 import (
 	"encoding/csv"
@@ -234,5 +234,11 @@ func formatLatency(d time.Duration) string {
 		return fmt.Sprintf("%d ms", d.Milliseconds())
 	} else {
 		return fmt.Sprintf("%.2f s", d.Seconds())
+	}
+}
+
+func WriteURLs(res []checker.Result, writers []func([]checker.Result)) {
+	for _, writer := range writers {
+		writer(res)
 	}
 }
