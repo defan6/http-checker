@@ -1,7 +1,6 @@
 package checker
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -20,24 +19,24 @@ func NewClient(timeout time.Duration) *Client {
 	}
 }
 
-func (c *Client) CheckURL(url string) (Result, error) {
+func (c *Client) CheckURL(url string) Result {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
+	result := Result{URL: url}
 	if err != nil {
-		return Result{}, fmt.Errorf("Cannot create req for url %s: %w", url, err)
+		result.Error = err
+		return result
 	}
 	start := time.Now()
 	resp, err := c.httpClient.Do(req)
 	requestTime := time.Since(start)
+	result.Latency = requestTime
 	if err != nil {
-		return Result{}, fmt.Errorf("Cannot send req for url %s: %w", url, err)
+		result.Error = err
+		return result
 	}
+	result.StatusCode = resp.StatusCode
 
 	defer resp.Body.Close()
-	res := Result{
-		URL:        url,
-		StatusCode: resp.StatusCode,
-		Latency:    requestTime,
-	}
 
-	return res, nil
+	return result
 }
